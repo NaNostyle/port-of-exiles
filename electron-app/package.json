@@ -1,7 +1,7 @@
 {
-  "name": "poe-trade-data-viewer",
+  "name": "port-of-exiles",
   "version": "1.0.0",
-  "description": "Electron app to view Path of Exile trade data captured by Chrome extension",
+  "description": "Path of Exile automation tool with teleport and autobuy features",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -15,7 +15,7 @@
     "electron",
     "chrome-extension"
   ],
-  "author": "POE Trade Data Viewer",
+  "author": "Port of Exiles",
   "license": "MIT",
   "devDependencies": {
     "electron": "^27.0.0",
@@ -31,8 +31,8 @@
     "jsonwebtoken": "^9.0.2"
   },
   "build": {
-    "appId": "com.poe.trade.data.viewer",
-    "productName": "POE Trade Data Viewer",
+    "appId": "com.portofexiles.app",
+    "productName": "Port of Exiles",
     "directories": {
       "output": "dist"
     },

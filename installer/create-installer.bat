@@ -19,7 +19,7 @@ cd installer
 echo Downloading NSIS (Nullsoft Scriptable Install System)...
 if not exist "nsis-3.08-setup.exe" (
     echo Downloading NSIS installer...
-    powershell -Command "Invoke-WebRequest -Uri 'https://nsis.sourceforge.io/mediawiki/images/4/4a/Nsis-3.08-setup.exe' -OutFile 'nsis-3.08-setup.exe'"
+    powershell -Command "Invoke-WebRequest -Uri 'https://sourceforge.net/projects/nsis/files/NSIS%203/3.08/nsis-3.08-setup.exe/download' -OutFile 'nsis-3.08-setup.exe'"
     if errorlevel 1 (
         echo Failed to download NSIS. Please download manually from: https://nsis.sourceforge.io/
         pause

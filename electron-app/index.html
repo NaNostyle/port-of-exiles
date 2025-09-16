@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POE Trade Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #27ae60;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-google {
+            background: #4285f4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 16px;
+            padding: 15px 30px;
+        }
+
+        .btn-google:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .google-icon {
+            background: white;
+            color: #4285f4;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Login Section */
+        .login-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .login-card h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .login-card p {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .login-features {
+            margin-bottom: 30px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .feature-icon {
+            font-size: 1.2em;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-details h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+
+        .user-details p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .purchase-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .purchase-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .purchase-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .purchase-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchase-card.featured {
+            border: 2px solid #27ae60;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e8 100%);
+        }
+
+        .purchase-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .purchase-card .price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .purchase-card p {
+            color: #6c757d;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .data-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .data-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .data-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .data-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .data-timestamp {
+            color: #6c757d;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .data-url {
+            color: #007bff;
+            font-size: 0.9em;
+            word-break: break-all;
+            max-width: 60%;
+        }
+
+        .data-content {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 300;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .cookies-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .cookies-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .cookies-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cookie-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .cookie-name {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .cookie-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #6c757d;
+            word-break: break-all;
+            margin-bottom: 5px;
+        }
+
+        .cookie-info {
+            color: #6c757d;
+            font-size: 0.8em;
+        }
+
+        .whisper-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .whisper-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .whisper-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .whisper-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .whisper-item.success {
+            border-left: 4px solid #27ae60;
+        }
+
+        .whisper-item.error {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .whisper-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .whisper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .whisper-timestamp {
+            color: #6c757d;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .whisper-status {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .whisper-content {
+            font-size: 0.9em;
+        }
+
+        .whisper-item-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .whisper-account {
+            color: #6c757d;
+            font-size: 0.8em;
+        }
+
+        .whisper-error {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .click-status-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .click-status-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .click-status-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .click-status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .click-status-indicator.active {
+            background: #27ae60;
+            animation: pulse 1s infinite;
+        }
+
+        .click-status-indicator.inactive {
+            background: #95a5a6;
+        }
+
+        .click-status-info {
+            flex: 1;
+        }
+
+        .click-status-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .click-status-details {
+            color: #6c757d;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        /* Experimental Features */
+        .experimental-section {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #f39c12;
+        }
+
+        .experimental-section h3 {
+            margin: 0 0 15px 0;
+            color: #e67e22;
+            font-size: 1.2em;
+        }
+
+        .feature-toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .toggle-slider {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            transition: background 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-container input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-container input[type="checkbox"]:checked + .toggle-slider {
+            background: #e74c3c;
+        }
+
+        .toggle-container input[type="checkbox"]:checked + .toggle-slider::before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .feature-description {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px 20px 0 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-header h3 {
+            margin: 0 0 15px 0;
+            color: #e74c3c;
+            font-size: 1.3em;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .warning-list {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-list h4 {
+            margin: 0 0 10px 0;
+            color: #856404;
+            font-size: 1em;
+        }
+
+        .warning-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .warning-list li {
+            margin-bottom: 8px;
+            color: #856404;
+            line-height: 1.4;
+        }
+
+        .game-window-warning {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .game-window-warning h4 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+            font-size: 1.1em;
+        }
+
+        .game-window-warning p {
+            margin: 5px 0;
+            color: #0c5460;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            padding: 0 20px 20px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            min-width: 120px;
+        }
+
+        /* Verification Steps Styles */
+        .verification-steps {
+            margin: 30px 0;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .step.completed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .step.active {
+            border-color: #007bff;
+            background: #e3f2fd;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: #007bff;
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .step-content p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .step-status {
+            margin-left: 15px;
+        }
+
+        .checkmark {
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .step-actions {
+            margin-top: 15px;
+        }
+
+        .extension-links {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .extension-links .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .step-instruction {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .test-connection {
+            text-align: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .connection-indicator {
+            font-size: 20px;
+        }
+
+        .connection-indicator.connected {
+            color: #28a745;
+        }
+
+        .connection-indicator.disconnected {
+            color: #dc3545;
+        }
+
+        .setup-complete {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #28a745;
+        }
+
+        .success-message h3 {
+            color: #155724;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .success-message p {
+            color: #155724;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        /* Feature Status Section Styles */
+        .feature-status-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .feature-status-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicators {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .status-indicator-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+        }
+
+        .status-indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .status-badge.enabled {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-badge.disabled {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-badge.enabled .status-dot {
+            background: #28a745;
+        }
+
+        .status-badge.disabled .status-dot {
+            background: #dc3545;
+        }
+
+        .status-toggle {
+            margin-top: 10px;
+        }
+
+        /* Improved Teleport History Styles */
+        .teleport-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+
+        .teleport-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .teleport-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e9ecef;
+        }
+
+        .teleport-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .teleport-item:last-child {
+            border-bottom: none;
+        }
+
+        .teleport-item:hover {
+            background: #f8f9fa;
+        }
+
+        .teleport-item.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .teleport-item.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .teleport-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .teleport-timestamp {
+            font-size: 0.85em;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .teleport-status {
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .teleport-item.success .teleport-status {
+            color: #28a745;
+        }
+
+        .teleport-item.error .teleport-status {
+            color: #dc3545;
+        }
+
+        .teleport-content {
+            margin-top: 8px;
+        }
+
+        .teleport-item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .teleport-account {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .teleport-error {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .status-indicators {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-indicator-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .data-item-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .data-url {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Path of Exile Trade Data Viewer</h1>
+            <p>Real-time monitoring of trade API responses from your Chrome extension</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section" style="display: block;">
+            <div class="login-container">
+                <div class="login-card">
+                    <h2>Welcome to POE Auto-Buy</h2>
+                    <p>Complete the setup process to start using the auto-buy feature</p>
+                    
+                    <!-- 3-Step Verification Process -->
+                    <div class="verification-steps">
+                        <div class="step" id="step1">
+                            <div class="step-header">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h3>Login with Google</h3>
+                                    <p>Sign in with your Google account to access the service</p>
+                                </div>
+                                <div class="step-status" id="step1Status">
+                                    <span class="checkmark">⏳</span>
+                                </div>
+                            </div>
+                            <div class="step-actions" id="step1Actions">
+                                <button id="googleLoginBtn" class="btn btn-google">
+                                    <span class="google-icon">G</span>
+                                    Sign in with Google
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="step" id="step2">
+                            <div class="step-header">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h3>Install & Connect Extension</h3>
+                                    <p>Download the browser extension and click "Connect to the app"</p>
+                                </div>
+                                <div class="step-status" id="step2Status">
+                                    <span class="checkmark">⏳</span>
+                                </div>
+                            </div>
+                            <div class="step-actions" id="step2Actions" style="display: none;">
+                                <div class="extension-links">
+                                    <a href="#" id="chromeExtensionLink" class="btn btn-primary" target="_blank">
+                                        📥 Download Chrome Extension
+                                    </a>
+                                    <a href="#" id="firefoxExtensionLink" class="btn btn-primary" target="_blank">
+                                        📥 Download Firefox Extension
+                                    </a>
+                                </div>
+                                <p class="step-instruction">After installing, click "Connect to the app" in the extension popup</p>
+                            </div>
+                        </div>
+
+                        <div class="step" id="step3">
+                            <div class="step-header">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h3>Test Live Connection</h3>
+                                    <p>Make a search on poe2trade website to verify data flow</p>
+                                </div>
+                                <div class="step-status" id="step3Status">
+                                    <span class="checkmark">⏳</span>
+                                </div>
+                            </div>
+                            <div class="step-actions" id="step3Actions" style="display: none;">
+                                <div class="test-connection">
+                                    <p class="step-instruction">Go to <a href="https://www.pathofexile.com/trade" target="_blank">poe2trade</a> and perform a search</p>
+                                    <div class="connection-status">
+                                        <span id="connectionIndicator" class="connection-indicator">🔴</span>
+                                        <span id="connectionText">Waiting for trade data...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setup-complete" id="setupComplete" style="display: none;">
+                        <div class="success-message">
+                            <h3>🎉 Setup Complete!</h3>
+                            <p>All steps completed successfully. You can now use the auto-buy feature.</p>
+                            <button id="proceedToDashboard" class="btn btn-success">Proceed to Dashboard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Dashboard -->
+        <div id="dashboardSection" class="dashboard-section" style="display: none;">
+            <div class="user-header">
+                <div class="user-info">
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <div class="user-details">
+                        <h3 id="userName">User Name</h3>
+                        <p id="userEmail">user@example.com</p>
+                    </div>
+                </div>
+            <div class="user-actions">
+                <button id="refreshProfileBtn" class="btn btn-primary" onclick="refreshUserProfile()">Refresh</button>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                <button class="btn btn-warning" onclick="forceEnableTeleport()" style="margin-left: 10px;">Force Enable Teleport</button>
+                <button id="overlayToggleBtn" class="btn btn-info" onclick="toggleOverlay()" style="margin-left: 10px;">Show Overlay</button>
+            </div>
+            </div>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="tokenBalance">0</div>
+                    <div class="stat-label">Available Tokens</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dailyUsage">0</div>
+                    <div class="stat-label">Daily Usage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="subscriptionStatus">Free</div>
+                    <div class="stat-label">Subscription</div>
+                </div>
+            </div>
+
+            <!-- Feature Status Indicators -->
+            <div class="feature-status-section">
+                <h3>Feature Status</h3>
+                <div class="status-indicators">
+                    <div class="status-indicator-card">
+                        <div class="status-indicator-header">
+                            <span class="status-label">Teleport Feature</span>
+                            <div class="status-badge" id="teleportStatusBadge">
+                                <span class="status-dot" id="teleportStatusDot"></span>
+                                <span class="status-text" id="teleportStatusText">Enabled</span>
+                            </div>
+                        </div>
+                        <div class="status-toggle">
+                            <label class="toggle-container">
+                                <input type="checkbox" id="teleportToggle" checked>
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">Enable Teleports</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="status-indicator-card">
+                        <div class="status-indicator-header">
+                            <span class="status-label">Auto-Buy Feature</span>
+                            <div class="status-badge" id="autobuyStatusBadge">
+                                <span class="status-dot" id="autobuyStatusDot"></span>
+                                <span class="status-text" id="autobuyStatusText">Disabled</span>
+                            </div>
+                        </div>
+                        <div class="status-toggle">
+                            <label class="toggle-container">
+                                <input type="checkbox" id="autobuyToggle">
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">Enable Auto-Buy (Experimental)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="experimental-section">
+                <h3>Experimental Features</h3>
+                <div class="experimental-features">
+                    <div class="feature-description">
+                        <p>⚠️ <strong>Auto-Buy Feature:</strong> Automatically purchase items after teleporting. Use with caution!</p>
+                        <p>🔄 <strong>Teleport Feature:</strong> Automatically send teleport requests when trade data is received.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="purchase-section">
+                <h3>Purchase Options</h3>
+                <div class="purchase-options">
+                    <div class="purchase-card">
+                        <h4>30 Tokens</h4>
+                        <div class="price">€2.99</div>
+                        <p>Perfect for occasional use</p>
+                        <button class="btn btn-primary" onclick="purchaseTokens('price_1S7HrFGq9vbVKPQi3kJKHG6T')">Buy Now</button>
+                    </div>
+                    <div class="purchase-card">
+                        <h4>50 Tokens</h4>
+                        <div class="price">€3.99</div>
+                        <p>Great value for regular users</p>
+                        <button class="btn btn-primary" onclick="purchaseTokens('price_1S7HrgGq9vbVKPQiLntrsDPb')">Buy Now</button>
+                    </div>
+                    <div class="purchase-card featured">
+                        <h4>Unlimited Monthly</h4>
+                        <div class="price">€10.00</div>
+                        <p>Unlimited whispers for 30 days</p>
+                        <button class="btn btn-success" onclick="purchaseSubscription('price_1S7HruGq9vbVKPQiv03D19ag')">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalItems">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="lastUpdate">--:--</div>
+                <div class="stat-label">Last Update</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="connectionStatus">Disconnected</div>
+                <div class="stat-label">Extension Status</div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span>Chrome Extension Connection</span>
+            </div>
+            <div class="status-item">
+                <span>WebSocket Server: <strong>ws://localhost:8080</strong></span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="clearAllData()">Clear All Data</button>
+            <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+            <button class="btn btn-secondary" onclick="exportCookies()">Export Cookies</button>
+            <button class="btn btn-secondary" onclick="toggleAutoScroll()">Toggle Auto-scroll</button>
+            <button class="btn btn-success" onclick="testRobotJS()">Test RobotJS</button>
+            <button class="btn btn-info" onclick="testGridPositions()">Test Grid System</button>
+            <button class="btn btn-warning" onclick="getScreenInfo()">Debug Screen Info</button>
+        </div>
+
+        <div class="data-container">
+            <div id="dataList" class="data-list">
+                <div class="empty-state">
+                    <h3>No Data Yet</h3>
+                    <p>Navigate to pathofexile.com and perform trade searches to see captured data here.</p>
+                    <p>Make sure the Chrome extension is installed and active.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog Modal -->
+    <div id="confirmationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Auto-Buy Confirmation</h3>
+            </div>
+            <div class="modal-body">
+                <p><strong>Warning:</strong> You are about to enable the experimental Auto-Buy feature.</p>
+                
+                <div class="warning-list">
+                    <h4>⚠️ Important Requirements:</h4>
+                    <ul>
+                        <li><strong>Teleport feature will be automatically enabled</strong> (required for autobuy)</li>
+                        <li><strong>Switch to your Path of Exile game window</strong> before enabling</li>
+                        <li>Make sure you're in your hideout or a safe location</li>
+                    </ul>
+                </div>
+                
+                <div class="warning-list">
+                    <h4>Please be aware of the following risks:</h4>
+                    <ul>
+                        <li>This feature will automatically click on items in your stash</li>
+                        <li>It may purchase items you don't want or can't afford</li>
+                        <li>It could interfere with other applications or games</li>
+                        <li>Use only when you're actively monitoring the process</li>
+                        <li>Press <kbd>Esc</kbd> at any time to stop auto-buying</li>
+                    </ul>
+                </div>
+                
+                <div class="game-window-warning">
+                    <h4>🎮 Game Window Warning:</h4>
+                    <p><strong>Make sure Path of Exile is your active window before proceeding!</strong></p>
+                    <p>The autobuy feature will automatically click on your game screen.</p>
+                </div>
+                
+                <p><strong>By enabling this feature, you acknowledge these risks and agree to use it responsibly.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmAutobuy" class="btn btn-danger" onclick="handleConfirmAutobuy()">I Understand, Enable Auto-Buy</button>
+                <button id="cancelAutobuy" class="btn btn-secondary" onclick="handleCancelAutobuy()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POE2 Trade Client</title>
+    <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <div class="tab-list" id="tab-list">
+                <button class="tab-button active" data-tab="settings">
+                    <div class="tab-status-bubble gray"></div>
+                    ⚙️ Settings
+                </button>
+                <button class="tab-button" data-tab="tab1">
+                    <div class="tab-status-bubble red"></div>
+                    Tab 1
+                </button>
+                <button class="tab-button" data-tab="tab2">
+                    <div class="tab-status-bubble red"></div>
+                    Tab 2
+                </button>
+                <button class="tab-button" data-tab="tab3">
+                    <div class="tab-status-bubble red"></div>
+                    Tab 3
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Settings Tab -->
+            <div class="tab-content active" id="settings-tab">
+                <div class="config-panel">
+                    <h2>Global Settings</h2>
+                    <div class="form-group">
+                        <label for="global-poe-sessid">POESESSID:</label>
+                        <input type="text" id="global-poe-sessid" placeholder="Enter your POESESSID cookie value">
+                    </div>
+                    <div class="form-group">
+                        <label for="global-cf-clearance">CF Clearance:</label>
+                        <input type="text" id="global-cf-clearance" placeholder="Enter your cf_clearance cookie value">
+                    </div>
+                    <div class="form-group">
+                        <label for="global-user-agent">User Agent:</label>
+                        <input type="text" id="global-user-agent" placeholder="Enter your User Agent">
+                    </div>
+                    <div class="form-actions">
+                        <button id="apply-settings-btn" class="btn btn-primary">Apply Settings</button>
+                        <button id="auto-fill-cookies-btn" class="btn btn-success">🍪 Auto-Fill from Browser</button>
+                        <button id="clear-settings-btn" class="btn btn-secondary">Clear</button>
+                    </div>
+                </div>
+                <div class="config-panel">
+                    <h3>Audio Test</h3>
+                    <button id="test-audio-btn" class="btn btn-secondary">🔊 Test Audio</button>
+                </div>
+            </div>
+
+            <!-- Tab 1 Content -->
+            <div class="tab-content" id="tab1-content">
+                <div class="tab-header">
+                    <input type="text" id="tab1-name-input" class="tab-name-input" value="Tab 1" placeholder="Tab name">
+                    <span id="tab1-status" class="tab-status status-indicator disconnected">Disconnected</span>
+                </div>
+                <div class="tab-main-content">
+                    <div class="config-panel">
+                        <div class="form-group">
+                            <label for="tab1-ws-url">WebSocket URL:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab1-ws-url" placeholder="wss://www.pathofexile.com/api/trade2/live/poe2/Rise%20of%20the%20Abyssal/M7EwoaMtJ">
+                                <button id="tab1-ws-autofill-btn" class="btn btn-secondary" title="Auto-fill from current URL">🔗</button>
+                            </div>
+                            <small style="color: #666; font-size: 0.7rem; margin-top: 4px; display: block;">
+                                💡 Tip: Use the 🔗 button to auto-fill from current URL, or copy from developer tools (Network tab)
+                            </small>
+                        </div>
+                        <div class="form-actions">
+                            <button id="tab1-connect-btn" class="btn btn-primary">Connect</button>
+                            <button id="tab1-disconnect-btn" class="btn btn-danger" disabled>Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Auto Modes</h3>
+                        <div class="auto-features">
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-fetch trade details (always enabled)</span>
+                            </div>
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-send whispers (always enabled)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Manual Actions</h3>
+                        <div class="form-group">
+                            <label for="tab1-message-input">Send Message:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab1-message-input" placeholder="Enter message" disabled>
+                                <button id="tab1-send-btn" class="btn btn-secondary" disabled>Send</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab1-trade-id-input">Fetch Trade:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab1-trade-id-input" placeholder="Enter trade ID">
+                                <button id="tab1-fetch-trade-btn" class="btn btn-secondary">Fetch</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab1-whisper-token-input">Send Whisper:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab1-whisper-token-input" placeholder="Enter whisper token">
+                                <button id="tab1-send-whisper-btn" class="btn btn-secondary">Whisper</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Messages Sent:</span>
+                                <span id="tab1-messages-sent" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Trades Fetched:</span>
+                                <span id="tab1-trades-fetched" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Whispers Sent:</span>
+                                <span id="tab1-whispers-sent" class="stat-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Logs</h3>
+                        <div class="log-controls">
+                            <button id="tab1-clear-logs-btn" class="btn btn-secondary">Clear Logs</button>
+                        </div>
+                        <div id="tab1-logs" class="log-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2 Content -->
+            <div class="tab-content" id="tab2-content">
+                <div class="tab-header">
+                    <input type="text" id="tab2-name-input" class="tab-name-input" value="Tab 2" placeholder="Tab name">
+                    <span id="tab2-status" class="tab-status status-indicator disconnected">Disconnected</span>
+                </div>
+                <div class="tab-main-content">
+                    <div class="config-panel">
+                        <div class="form-group">
+                            <label for="tab2-ws-url">WebSocket URL:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab2-ws-url" placeholder="wss://www.pathofexile.com/api/trade2/live/poe2/Rise%20of%20the%20Abyssal/M7EwoaMtJ">
+                                <button id="tab2-ws-autofill-btn" class="btn btn-secondary" title="Auto-fill from current URL">🔗</button>
+                            </div>
+                            <small style="color: #666; font-size: 0.7rem; margin-top: 4px; display: block;">
+                                💡 Tip: Use the 🔗 button to auto-fill from current URL, or copy from developer tools (Network tab)
+                            </small>
+                        </div>
+                        <div class="form-actions">
+                            <button id="tab2-connect-btn" class="btn btn-primary">Connect</button>
+                            <button id="tab2-disconnect-btn" class="btn btn-danger" disabled>Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Auto Modes</h3>
+                        <div class="auto-features">
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-fetch trade details (always enabled)</span>
+                            </div>
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-send whispers (always enabled)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Manual Actions</h3>
+                        <div class="form-group">
+                            <label for="tab2-message-input">Send Message:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab2-message-input" placeholder="Enter message" disabled>
+                                <button id="tab2-send-btn" class="btn btn-secondary" disabled>Send</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab2-trade-id-input">Fetch Trade:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab2-trade-id-input" placeholder="Enter trade ID">
+                                <button id="tab2-fetch-trade-btn" class="btn btn-secondary">Fetch</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab2-whisper-token-input">Send Whisper:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab2-whisper-token-input" placeholder="Enter whisper token">
+                                <button id="tab2-send-whisper-btn" class="btn btn-secondary">Whisper</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Messages Sent:</span>
+                                <span id="tab2-messages-sent" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Trades Fetched:</span>
+                                <span id="tab2-trades-fetched" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Whispers Sent:</span>
+                                <span id="tab2-whispers-sent" class="stat-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Logs</h3>
+                        <div class="log-controls">
+                            <button id="tab2-clear-logs-btn" class="btn btn-secondary">Clear Logs</button>
+                        </div>
+                        <div id="tab2-logs" class="log-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3 Content -->
+            <div class="tab-content" id="tab3-content">
+                <div class="tab-header">
+                    <input type="text" id="tab3-name-input" class="tab-name-input" value="Tab 3" placeholder="Tab name">
+                    <span id="tab3-status" class="tab-status status-indicator disconnected">Disconnected</span>
+                </div>
+                <div class="tab-main-content">
+                    <div class="config-panel">
+                        <div class="form-group">
+                            <label for="tab3-ws-url">WebSocket URL:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab3-ws-url" placeholder="wss://www.pathofexile.com/api/trade2/live/poe2/Rise%20of%20the%20Abyssal/M7EwoaMtJ">
+                                <button id="tab3-ws-autofill-btn" class="btn btn-secondary" title="Auto-fill from current URL">🔗</button>
+                            </div>
+                            <small style="color: #666; font-size: 0.7rem; margin-top: 4px; display: block;">
+                                💡 Tip: Use the 🔗 button to auto-fill from current URL, or copy from developer tools (Network tab)
+                            </small>
+                        </div>
+                        <div class="form-actions">
+                            <button id="tab3-connect-btn" class="btn btn-primary">Connect</button>
+                            <button id="tab3-disconnect-btn" class="btn btn-danger" disabled>Disconnect</button>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Auto Modes</h3>
+                        <div class="auto-features">
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-fetch trade details (always enabled)</span>
+                            </div>
+                            <div class="feature-status">
+                                <span class="feature-icon">✅</span>
+                                <span>Auto-send whispers (always enabled)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Manual Actions</h3>
+                        <div class="form-group">
+                            <label for="tab3-message-input">Send Message:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab3-message-input" placeholder="Enter message" disabled>
+                                <button id="tab3-send-btn" class="btn btn-secondary" disabled>Send</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab3-trade-id-input">Fetch Trade:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab3-trade-id-input" placeholder="Enter trade ID">
+                                <button id="tab3-fetch-trade-btn" class="btn btn-secondary">Fetch</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="tab3-whisper-token-input">Send Whisper:</label>
+                            <div class="input-group">
+                                <input type="text" id="tab3-whisper-token-input" placeholder="Enter whisper token">
+                                <button id="tab3-send-whisper-btn" class="btn btn-secondary">Whisper</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Messages Sent:</span>
+                                <span id="tab3-messages-sent" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Trades Fetched:</span>
+                                <span id="tab3-trades-fetched" class="stat-value">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Whispers Sent:</span>
+                                <span id="tab3-whispers-sent" class="stat-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-panel">
+                        <h3>Logs</h3>
+                        <div class="log-controls">
+                            <button id="tab3-clear-logs-btn" class="btn btn-secondary">Clear Logs</button>
+                        </div>
+                        <div id="tab3-logs" class="log-container"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="sidebar.js"></script>
+</body>
+</html>

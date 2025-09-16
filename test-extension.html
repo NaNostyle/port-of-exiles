@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test POE Trade API Capture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>POE Trade API Capture Test</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Make sure the Chrome extension is installed and enabled</li>
+                <li>Start the Electron app (npm start in electron-app folder)</li>
+                <li>Click the test button below to simulate a POE trade API call</li>
+                <li>Check the Electron app to see if the data was captured</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>Test POE Trade API Call</h3>
+            <p>This will simulate a fetch request to the Path of Exile trade API that should be captured by the extension.</p>
+            <button onclick="testPoeApiCall()">Test API Call</button>
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test XHR Call</h3>
+            <p>This will simulate an XMLHttpRequest to the Path of Exile trade API.</p>
+            <button onclick="testXhrCall()">Test XHR Call</button>
+            <div id="xhrResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function testPoeApiCall() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Making test API call...';
+            
+            // Simulate a POE trade API call
+            const testUrl = 'https://www.pathofexile.com/api/trade2/fetch/test';
+            const testData = {
+                result: [
+                    {
+                        id: 'test-item-1',
+                        item: {
+                            name: 'Test Item',
+                            type: 'Test Type',
+                            rarity: 'rare'
+                        },
+                        listing: {
+                            price: {
+                                amount: 10,
+                                currency: 'chaos'
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            // Create a mock response
+            const mockResponse = new Response(JSON.stringify(testData), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            // Override fetch temporarily to return our mock data
+            const originalFetch = window.fetch;
+            window.fetch = function(url) {
+                if (url.includes('pathofexile.com/api/trade2/fetch')) {
+                    resultDiv.textContent = 'Mock API call made to: ' + url + '\n\nResponse data:\n' + JSON.stringify(testData, null, 2);
+                    return Promise.resolve(mockResponse);
+                }
+                return originalFetch.apply(this, arguments);
+            };
+            
+            // Make the call
+            fetch(testUrl)
+                .then(response => response.json())
+                .then(data => {
+                    resultDiv.textContent = 'API call successful!\n\nURL: ' + testUrl + '\n\nResponse data:\n' + JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    resultDiv.textContent = 'Error: ' + error.message;
+                })
+                .finally(() => {
+                    // Restore original fetch
+                    window.fetch = originalFetch;
+                });
+        }
+        
+        function testXhrCall() {
+            const resultDiv = document.getElementById('xhrResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Making test XHR call...';
+            
+            const xhr = new XMLHttpRequest();
+            const testUrl = 'https://www.pathofexile.com/api/trade2/fetch/xhr-test';
+            const testData = {
+                result: [
+                    {
+                        id: 'xhr-test-item-1',
+                        item: {
+                            name: 'XHR Test Item',
+                            type: 'XHR Test Type',
+                            rarity: 'unique'
+                        },
+                        listing: {
+                            price: {
+                                amount: 5,
+                                currency: 'exalted'
+                            }
+                        }
+                    }
+                ]
+            };
+            
+            xhr.open('GET', testUrl);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        resultDiv.textContent = 'XHR call successful!\n\nURL: ' + testUrl + '\n\nResponse data:\n' + JSON.stringify(testData, null, 2);
+                    } else {
+                        resultDiv.textContent = 'XHR call failed with status: ' + xhr.status;
+                    }
+                }
+            };
+            
+            // Mock the response
+            setTimeout(() => {
+                xhr.status = 200;
+                xhr.responseText = JSON.stringify(testData);
+                xhr.onreadystatechange();
+            }, 100);
+            
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

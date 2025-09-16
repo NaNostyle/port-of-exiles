@@ -1,0 +1,182 @@
+name: Create Installer
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  create-installer:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download Release Assets
+      run: |
+        # Download the latest release assets
+        $headers = @{
+          "Authorization" = "token ${{ secrets.GITHUB_TOKEN }}"
+          "Accept" = "application/vnd.github.v3+json"
+        }
+        
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/latest" -Headers $headers
+        
+        # Download Windows executable
+        $windowsAsset = $release.assets | Where-Object { $_.name -like "*.exe" }
+        if ($windowsAsset) {
+          Invoke-WebRequest -Uri $windowsAsset.browser_download_url -OutFile "PortOfExiles.exe"
+        }
+        
+        # Download Chrome extension
+        $chromeAsset = $release.assets | Where-Object { $_.name -like "*chrome*" }
+        if ($chromeAsset) {
+          Invoke-WebRequest -Uri $chromeAsset.browser_download_url -OutFile "chrome-extension.zip"
+        }
+        
+        # Download Firefox extension
+        $firefoxAsset = $release.assets | Where-Object { $_.name -like "*firefox*" }
+        if ($firefoxAsset) {
+          Invoke-WebRequest -Uri $firefoxAsset.browser_download_url -OutFile "firefox-extension.zip"
+        }
+        
+    - name: Create Installer Script
+      run: |
+        $installerScript = @"
+        @echo off
+        echo ========================================
+        echo    Port of Exiles - Installation
+        echo ========================================
+        echo.
+        echo This installer will set up Port of Exiles on your system.
+        echo.
+        pause
+        
+        echo Creating installation directory...
+        if not exist "%USERPROFILE%\PortOfExiles" mkdir "%USERPROFILE%\PortOfExiles"
+        
+        echo Copying application files...
+        copy "PortOfExiles.exe" "%USERPROFILE%\PortOfExiles\"
+        
+        echo Creating desktop shortcut...
+        powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%USERPROFILE%\Desktop\Port of Exiles.lnk'); `$Shortcut.TargetPath = '%USERPROFILE%\PortOfExiles\PortOfExiles.exe'; `$Shortcut.Save()"
+        
+        echo Creating start menu shortcut...
+        if not exist "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Port of Exiles" mkdir "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Port of Exiles"
+        powershell -Command "`$WshShell = New-Object -comObject WScript.Shell; `$Shortcut = `$WshShell.CreateShortcut('%APPDATA%\Microsoft\Windows\Start Menu\Programs\Port of Exiles\Port of Exiles.lnk'); `$Shortcut.TargetPath = '%USERPROFILE%\PortOfExiles\PortOfExiles.exe'; `$Shortcut.Save()"
+        
+        echo.
+        echo ========================================
+        echo    Installation Complete!
+        echo ========================================
+        echo.
+        echo Port of Exiles has been installed to:
+        echo %USERPROFILE%\PortOfExiles
+        echo.
+        echo Desktop and Start Menu shortcuts have been created.
+        echo.
+        echo Next steps:
+        echo 1. Install the browser extension from the downloaded zip files
+        echo 2. Configure your API keys in the application
+        echo 3. Start using Port of Exiles!
+        echo.
+        echo For support, visit: https://github.com/${{ github.repository }}
+        echo.
+        pause
+        "@
+        
+        $installerScript | Out-File -FilePath "install.bat" -Encoding ASCII
+        
+    - name: Create NSIS Installer
+      run: |
+        # Create NSIS script for a more professional installer
+        $nsisScript = @"
+        !define APPNAME "Port of Exiles"
+        !define COMPANYNAME "Port of Exiles"
+        !define DESCRIPTION "Path of Exile Trade Automation Tool"
+        !define VERSIONMAJOR 1
+        !define VERSIONMINOR 0
+        !define VERSIONBUILD 0
+        !define HELPURL "https://github.com/${{ github.repository }}"
+        !define UPDATEURL "https://github.com/${{ github.repository }}/releases"
+        !define ABOUTURL "https://github.com/${{ github.repository }}"
+        !define INSTALLSIZE 50000
+        
+        RequestExecutionLevel admin
+        InstallDir `$PROGRAMFILES\${COMPANYNAME}
+        Name `${APPNAME}
+        outFile "PortOfExilesInstaller.exe"
+        
+        !include LogicLib.nsh
+        
+        page directory
+        page instfiles
+        
+        !macro VerifyUserIsAdmin
+        UserInfo::GetAccountType
+        pop `$0
+        `${If} `$0 != "admin"
+            messageBox mb_iconstop "Administrator rights required!"
+            setErrorLevel 740
+            quit
+        `${EndIf}
+        !macroend
+        
+        function .onInit
+            setShellVarContext all
+            !insertmacro VerifyUserIsAdmin
+        functionEnd
+        
+        section "install"
+            setOutPath `$INSTDIR
+            file "PortOfExiles.exe"
+            
+            writeUninstaller `$INSTDIR\uninstall.exe
+            
+            createDirectory `$SMPROGRAMS\${COMPANYNAME}
+            createShortCut `$SMPROGRAMS\${COMPANYNAME}\${APPNAME}.lnk `$INSTDIR\PortOfExiles.exe
+            createShortCut `$DESKTOP\${APPNAME}.lnk `$INSTDIR\PortOfExiles.exe
+            
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayName" `${APPNAME}
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "UninstallString" "`$INSTDIR\uninstall.exe"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "InstallLocation" "`$INSTDIR"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayIcon" "`$INSTDIR\PortOfExiles.exe"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "Publisher" `${COMPANYNAME}
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "HelpLink" `${HELPURL}
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "URLUpdateInfo" `${UPDATEURL}
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "URLInfoAbout" `${ABOUTURL}
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayVersion" `${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}
+            WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "VersionMajor" ${VERSIONMAJOR}
+            WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "VersionMinor" ${VERSIONMINOR}
+            WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "NoModify" 1
+            WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "NoRepair" 1
+            WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "EstimatedSize" ${INSTALLSIZE}
+        sectionEnd
+        
+        section "uninstall"
+            delete `$INSTDIR\PortOfExiles.exe
+            delete `$INSTDIR\uninstall.exe
+            rmDir `$INSTDIR
+            
+            delete `$SMPROGRAMS\${COMPANYNAME}\${APPNAME}.lnk
+            rmDir `$SMPROGRAMS\${COMPANYNAME}
+            delete `$DESKTOP\${APPNAME}.lnk
+            
+            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}"
+        sectionEnd
+        "@
+        
+        $nsisScript | Out-File -FilePath "installer.nsi" -Encoding ASCII
+        
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: installer
+        path: |
+          install.bat
+          installer.nsi
+          PortOfExiles.exe
+          chrome-extension.zip
+          firefox-extension.zip
+

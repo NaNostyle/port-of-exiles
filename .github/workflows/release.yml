@@ -1,0 +1,104 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: electron-app/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd electron-app
+        npm ci
+        
+    - name: Install Electron Builder
+      run: |
+        cd electron-app
+        npm install --save-dev electron-builder
+        
+    - name: Build Electron app
+      run: |
+        cd electron-app
+        npm run build
+        
+    - name: Create Release
+      if: matrix.os == 'windows-latest'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          electron-app/dist/*.exe
+          electron-app/dist/*.dmg
+          electron-app/dist/*.AppImage
+          chrome-extension.zip
+          firefox-extension.zip
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload Windows Artifacts
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: electron-app/dist/*.exe
+        
+    - name: Upload macOS Artifacts
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build
+        path: electron-app/dist/*.dmg
+        
+    - name: Upload Linux Artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: electron-app/dist/*.AppImage
+
+  package-extensions:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Package Chrome Extension
+      run: |
+        cd chrome-extension
+        zip -r ../chrome-extension.zip . -x "*.DS_Store" "*.git*"
+        
+    - name: Package Firefox Extension
+      run: |
+        cd firefox-extension
+        zip -r ../firefox-extension.zip . -x "*.DS_Store" "*.git*"
+        
+    - name: Upload Extension Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: browser-extensions
+        path: |
+          chrome-extension.zip
+          firefox-extension.zip
+

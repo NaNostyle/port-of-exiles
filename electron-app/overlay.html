@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>POE Auto-Buy Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            border-radius: 8px;
+            border: 2px solid #007bff;
+            user-select: none;
+            -webkit-app-region: drag;
+            overflow: hidden;
+            width: 220px;
+            height: 300px;
+        }
+
+        .overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .overlay-title {
+            font-weight: bold;
+            color: #007bff;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+        }
+
+        .close-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 10px;
+            -webkit-app-region: no-drag;
+        }
+
+        .close-btn:hover {
+            background: #c82333;
+        }
+
+        .status-section {
+            margin-bottom: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .status-label {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .status-value {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .status-enabled {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-disabled {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-active {
+            background: #ffc107;
+            color: black;
+        }
+
+        .message-section {
+            margin-top: 8px;
+            padding-top: 5px;
+            border-top: 1px solid #333;
+        }
+
+        .message {
+            font-size: 10px;
+            color: #ffc107;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .teleport-count {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .token-count {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .subscription-status {
+            background: #28a745;
+            color: white;
+        }
+
+        .subscription-status.inactive {
+            background: #6c757d;
+            color: white;
+        }
+
+            .hotkey-info {
+                text-align: center;
+                margin-bottom: 8px;
+                padding: 4px;
+                background: rgba(0, 123, 255, 0.2);
+                border-radius: 4px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .hotkey-text {
+                font-size: 9px;
+                color: #007bff;
+                font-weight: bold;
+            }
+
+        .controls-section {
+            margin-top: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 4px 6px;
+            border: none;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
+        }
+
+        .teleport-btn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .teleport-btn:hover {
+            background: #138496;
+        }
+
+        .autobuy-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .autobuy-btn:hover {
+            background: #c82333;
+        }
+
+        .toggle-btn {
+            padding: 2px 8px;
+            border: none;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
+            min-width: 50px;
+        }
+
+        .toggle-btn.on {
+            background: #28a745;
+            color: white;
+        }
+
+        .toggle-btn.off {
+            background: #dc3545;
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay-header">
+        <div class="overlay-title">
+            <img src="../port_of_exiles.png" alt="POE" class="logo">
+            Port of Exiles
+        </div>
+        <button class="close-btn" onclick="closeOverlay()">×</button>
+    </div>
+
+        <div class="hotkey-info">
+            <span class="hotkey-text">F1: Toggle Auto-Buy</span>
+            <span class="hotkey-text">F2: Toggle Teleport</span>
+        </div>
+
+    <div class="status-section">
+        <div class="status-item">
+            <span class="status-label">Teleport:</span>
+            <button id="teleportToggle" class="toggle-btn off" onclick="toggleTeleport()">OFF</button>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Auto-Buy:</span>
+            <button id="autobuyToggle" class="toggle-btn off" onclick="toggleAutobuy()">OFF</button>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Autoclick:</span>
+            <span id="autoclickStatus" class="status-value status-disabled">Idle</span>
+        </div>
+    </div>
+
+    <div class="status-section">
+        <div class="status-item">
+            <span class="status-label">Tokens:</span>
+            <span id="tokenCount" class="status-value token-count">0</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Daily:</span>
+            <span id="dailyCount" class="status-value teleport-count">0/30</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Sub:</span>
+            <span id="subscriptionStatus" class="status-value subscription-status inactive">Free</span>
+        </div>
+    </div>
+
+    <div class="message-section">
+        <div id="currentMessage" class="message">Ready</div>
+    </div>
+
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Close overlay function
+        function closeOverlay() {
+            window.close();
+        }
+
+        // Update status display
+        function updateStatus(type, data) {
+            switch(type) {
+                case 'teleport-status':
+                    const teleportToggle = document.getElementById('teleportToggle');
+                    if (data.enabled) {
+                        teleportToggle.textContent = 'ON';
+                        teleportToggle.className = 'toggle-btn on';
+                    } else {
+                        teleportToggle.textContent = 'OFF';
+                        teleportToggle.className = 'toggle-btn off';
+                    }
+                    break;
+
+                case 'autobuy-status':
+                    const autobuyToggle = document.getElementById('autobuyToggle');
+                    const autoclickStatus = document.getElementById('autoclickStatus');
+                    const currentMessage = document.getElementById('currentMessage');
+                    
+                    if (data.enabled) {
+                        autobuyToggle.textContent = 'ON';
+                        autobuyToggle.className = 'toggle-btn on';
+                    } else {
+                        autobuyToggle.textContent = 'OFF';
+                        autobuyToggle.className = 'toggle-btn off';
+                    }
+
+                    if (data.active) {
+                        autoclickStatus.textContent = 'Clicking';
+                        autoclickStatus.className = 'status-value status-active';
+                        currentMessage.textContent = data.message || 'Auto-buying...';
+                    } else {
+                        autoclickStatus.textContent = 'Idle';
+                        autoclickStatus.className = 'status-value status-disabled';
+                        currentMessage.textContent = data.message || 'Ready';
+                    }
+                    break;
+
+                case 'profile-update':
+                    const tokenCount = document.getElementById('tokenCount');
+                    const dailyCount = document.getElementById('dailyCount');
+                    const subscriptionStatus = document.getElementById('subscriptionStatus');
+                    
+                    if (data.tokenCount !== undefined) {
+                        tokenCount.textContent = data.tokenCount;
+                    }
+                    if (data.dailyCount !== undefined && data.dailyLimit !== undefined) {
+                        dailyCount.textContent = `${data.dailyCount}/${data.dailyLimit}`;
+                    }
+                    if (data.isSubscribed !== undefined) {
+                        if (data.isSubscribed) {
+                            subscriptionStatus.textContent = 'Pro';
+                            subscriptionStatus.className = 'status-value subscription-status';
+                        } else {
+                            subscriptionStatus.textContent = 'Free';
+                            subscriptionStatus.className = 'status-value subscription-status inactive';
+                        }
+                    }
+                    break;
+            }
+        }
+
+        // Listen for updates from main process
+        ipcRenderer.on('overlay-update', (event, data) => {
+            updateStatus(data.type, data);
+        });
+
+        // Request initial status
+        ipcRenderer.send('request-overlay-status');
+
+        // Toggle functions
+        function toggleTeleport() {
+            ipcRenderer.send('overlay-toggle-teleport');
+        }
+
+        function toggleAutobuy() {
+            ipcRenderer.send('overlay-toggle-autobuy');
+        }
+
+        // Make window draggable
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('close-btn') || e.target.classList.contains('control-btn')) return;
+            // Window is already draggable via CSS
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug POE Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>POE Extension Debug Tool</h1>
+        
+        <div id="status" class="status info">
+            Checking extension status...
+        </div>
+        
+        <div>
+            <button onclick="testFetch()">Test Fetch Call</button>
+            <button onclick="testXHR()">Test XHR Call</button>
+            <button onclick="clearLog()">Clear Log</button>
+            <button onclick="checkExtension()">Check Extension</button>
+        </div>
+        
+        <div id="log" class="log">
+            Debug log will appear here...<br>
+        </div>
+    </div>
+
+    <script>
+        let logDiv = document.getElementById('log');
+        let statusDiv = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
+            logDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span><br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            logDiv.innerHTML = 'Debug log cleared...<br>';
+        }
+        
+        function checkExtension() {
+            log('Checking if extension is loaded...');
+            
+            // Check if we're on a pathofexile.com domain
+            if (window.location.hostname.includes('pathofexile.com')) {
+                // Check if our injected script is present
+                if (window.fetch.toString().includes('POE Trade Data Capture')) {
+                    log('✅ Extension injected script detected!', 'success');
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Extension is loaded and active';
+                } else {
+                    log('❌ Extension injected script not found', 'error');
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Extension not detected - please install and reload';
+                }
+            } else {
+                log('⚠️ This debug page only works on pathofexile.com domains', 'error');
+                statusDiv.className = 'status error';
+                statusDiv.textContent = 'Please navigate to pathofexile.com to test the extension';
+                log('💡 To test: Go to https://www.pathofexile.com/trade and open this debug page there', 'info');
+            }
+        }
+        
+        function testFetch() {
+            log('Testing fetch call to POE API...');
+            
+            const testUrl = 'https://www.pathofexile.com/api/trade2/fetch/test123';
+            const testData = {
+                result: [
+                    {
+                        id: 'test-item-1',
+                        item: { name: 'Test Item', type: 'Test Type' },
+                        listing: { price: { amount: 10, currency: 'chaos' } }
+                    }
+                ]
+            };
+            
+            // Override fetch to return mock data
+            const originalFetch = window.fetch;
+            window.fetch = function(url) {
+                if (url.includes('pathofexile.com/api/trade2/fetch')) {
+                    log(`🔍 Intercepted fetch call: ${url}`, 'success');
+                    return Promise.resolve(new Response(JSON.stringify(testData), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }));
+                }
+                return originalFetch.apply(this, arguments);
+            };
+            
+            fetch(testUrl)
+                .then(response => response.json())
+                .then(data => {
+                    log(`✅ Fetch response received: ${JSON.stringify(data)}`, 'success');
+                })
+                .catch(error => {
+                    log(`❌ Fetch error: ${error.message}`, 'error');
+                })
+                .finally(() => {
+                    window.fetch = originalFetch;
+                });
+        }
+        
+        function testXHR() {
+            log('Testing XHR call to POE API...');
+            
+            const xhr = new XMLHttpRequest();
+            const testUrl = 'https://www.pathofexile.com/api/trade2/fetch/xhr-test';
+            const testData = {
+                result: [
+                    {
+                        id: 'xhr-test-item-1',
+                        item: { name: 'XHR Test Item', type: 'XHR Test Type' },
+                        listing: { price: { amount: 5, currency: 'exalted' } }
+                    }
+                ]
+            };
+            
+            xhr.open('GET', testUrl);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        log(`✅ XHR response received: ${xhr.responseText}`, 'success');
+                    } else {
+                        log(`❌ XHR failed with status: ${xhr.status}`, 'error');
+                    }
+                }
+            };
+            
+            // Mock the response
+            setTimeout(() => {
+                xhr.status = 200;
+                xhr.responseText = JSON.stringify(testData);
+                xhr.onreadystatechange();
+            }, 100);
+            
+            xhr.send();
+        }
+        
+        // Listen for custom events from the extension
+        window.addEventListener('poeTradeData', (event) => {
+            log(`🎉 Extension captured data: ${JSON.stringify(event.detail)}`, 'success');
+        });
+        
+        // Auto-check extension on load
+        window.addEventListener('load', () => {
+            setTimeout(checkExtension, 1000);
+        });
+    </script>
+</body>
+</html>

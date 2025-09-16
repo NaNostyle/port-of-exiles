@@ -1,0 +1,25 @@
+fetch("https://www.pathofexile.com/api/trade2/whisper", {
+    "headers": {
+      "accept": "*/*",
+      "accept-language": "en-US,en;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-GB;q=0.6",
+      "content-type": "application/json",
+      "priority": "u=1, i",
+      "sec-ch-ua": "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"",
+      "sec-ch-ua-arch": "\"x86\"",
+      "sec-ch-ua-bitness": "\"64\"",
+      "sec-ch-ua-full-version": "\"140.0.7339.128\"",
+      "sec-ch-ua-full-version-list": "\"Chromium\";v=\"140.0.7339.128\", \"Not=A?Brand\";v=\"24.0.0.0\", \"Google Chrome\";v=\"140.0.7339.128\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-model": "\"\"",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "sec-ch-ua-platform-version": "\"19.0.0\"",
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
+      "x-requested-with": "XMLHttpRequest",
+      "cookie": "cf_clearance=VbIlwKXcFB5Y1bDaB.QWaedBfuLd4EnWfbeMNFOK85c-1757815146-1.2.1.1-tqAUXLGH9bbUWGygbos0ZOIX1pyTPckivtO7KD.aBpYo4vfHXxKIDbH2EM7AOr.myqys0dWXVd31UlLKwJAuJUPUtCytZxDQiOiv9fXUv_LduDSVkniQUg5.AkarOS0hDuXR6nEKEKy0obPFy21GT0aSnrsQPo5qsUeF.3TJIn3bPPE3lzaoa8yHy6CKj_ACoVtagGgVb2l367GRYgsKAQZurfHjGH4318hXW3MgSWo; POESESSID=14ba77eeb024d39eb5f2cdb7fd63a28b",
+      "Referer": "https://www.pathofexile.com/trade2/search/poe2/Rise%20of%20the%20Abyssal/8eJ93OMtV"
+    },
+    "body": "{\"token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJmNGIwMTRjMmYxZDI5YmNkY2MyZDA4NWJmZjAxYWU4OCIsImlzcyI6IjhlSjkzT010ViIsImF1ZCI6ImZhNzE1N2M1LTBlOTItNDBlYi1iN2ViLWIwNDBiZTQwYjM4NiIsInRvayI6ImhpZGVvdXQiLCJzdWIiOiI1Y2UxMzYyNzg5ZjhhMzMyZTM4NzUxZmZjMDIwNzUxNmYyOWRlMDI4NDRjZWQwMTAwZjMzOTZlMjYyYzE3MzNjIiwiZGF0IjoiMTM1NWRkZTUwMzcwYTJlNTU0OWVlZTE1YzM3OTc4ZDUiLCJpYXQiOjE3NTc4MTY5MDcsImV4cCI6MTc1NzgxNzIwN30.s7SAmWkz2amO_U43gCHRRtUmuX3QsDxnssuBN8z6Uic\"}",
+    "method": "POST"
+  });

@@ -1,0 +1,48 @@
+{
+  "manifest_version": 2,
+  "name": "Port of Exiles",
+  "version": "1.0.0",
+  "description": "Connect to Port of Exiles app for automatic item purchasing",
+  "permissions": [
+    "activeTab",
+    "webRequest",
+    "storage",
+    "cookies",
+    "tabs",
+    "https://www.pathofexile.com/*",
+    "https://pathofexile.com/*",
+    "https://*.pathofexile.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.pathofexile.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Port of Exiles",
+    "default_icon": {
+      "16": "port_of_exiles.png",
+      "32": "port_of_exiles.png",
+      "48": "port_of_exiles.png",
+      "128": "port_of_exiles.png"
+    }
+  },
+  "icons": {
+    "16": "port_of_exiles.png",
+    "32": "port_of_exiles.png",
+    "48": "port_of_exiles.png",
+    "128": "port_of_exiles.png"
+  },
+  "web_accessible_resources": [
+    "injected.js",
+    "debug-cookies-comprehensive.js",
+    "test-cookie-fixes.js"
+  ]
+}
+

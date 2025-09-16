@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "POE2 Trade WebSocket Client",
+  "version": "1.0.0",
+  "description": "WebSocket client for Path of Exile 2 trade API with auto-fetch and auto-whisper functionality",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "cookies",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.pathofexile.com/*",
+    "wss://www.pathofexile.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.pathofexile.com/trade2/search/poe2*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["tp-successfull.mp3", "sidebar.html", "sidebar.css", "sidebar.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

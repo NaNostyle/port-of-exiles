@@ -27,13 +27,7 @@ if not exist "nsis-3.08-setup.exe" (
     )
 )
 
-echo Installing NSIS...
-nsis-3.08-setup.exe /S
-if errorlevel 1 (
-    echo Failed to install NSIS. Please install manually.
-    pause
-    exit /b 1
-)
+echo NSIS is already installed. Proceeding with installer creation...
 
 echo Building Electron application...
 cd ..\electron-app
@@ -78,8 +72,8 @@ echo !define ABOUTURL "https://github.com/your-username/port-of-exiles"
 echo !define INSTALLSIZE 50000
 echo.
 echo RequestExecutionLevel admin
-echo InstallDir $PROGRAMFILES\${COMPANYNAME}
-echo Name ${APPNAME}
+echo InstallDir "$PROGRAMFILES\Port of Exiles"
+echo Name "Port of Exiles"
 echo outFile "PortOfExilesInstaller.exe"
 echo.
 echo !include LogicLib.nsh
@@ -104,7 +98,24 @@ echo functionEnd
 echo.
 echo section "install"
 echo     setOutPath $INSTDIR
-echo     file "..\electron-app\dist\PortOfExiles.exe"
+echo     file "..\electron-app\dist\win-unpacked\Port of Exiles.exe"
+echo     file "..\electron-app\dist\win-unpacked\ffmpeg.dll"
+echo     file "..\electron-app\dist\win-unpacked\d3dcompiler_47.dll"
+echo     file "..\electron-app\dist\win-unpacked\libEGL.dll"
+echo     file "..\electron-app\dist\win-unpacked\libGLESv2.dll"
+echo     file "..\electron-app\dist\win-unpacked\vk_swiftshader.dll"
+echo     file "..\electron-app\dist\win-unpacked\vulkan-1.dll"
+echo     file "..\electron-app\dist\win-unpacked\resources.pak"
+echo     file "..\electron-app\dist\win-unpacked\icudtl.dat"
+echo     file "..\electron-app\dist\win-unpacked\snapshot_blob.bin"
+echo     file "..\electron-app\dist\win-unpacked\v8_context_snapshot.bin"
+echo     file "..\electron-app\dist\win-unpacked\chrome_100_percent.pak"
+echo     file "..\electron-app\dist\win-unpacked\chrome_200_percent.pak"
+echo     file "..\electron-app\dist\win-unpacked\LICENSE.electron.txt"
+echo     file "..\electron-app\dist\win-unpacked\LICENSES.chromium.html"
+echo     file "..\electron-app\dist\win-unpacked\vk_swiftshader_icd.json"
+echo     file /r "..\electron-app\dist\win-unpacked\locales"
+echo     file /r "..\electron-app\dist\win-unpacked\resources"
 echo     file "..\chrome-extension\chrome-extension.zip"
 echo     file "..\firefox-extension\firefox-extension.zip"
 echo     file "..\README.md"
@@ -112,44 +123,62 @@ echo     file "..\LICENSE"
 echo.
 echo     writeUninstaller $INSTDIR\uninstall.exe
 echo.
-echo     createDirectory $SMPROGRAMS\${COMPANYNAME}
-echo     createShortCut $SMPROGRAMS\${COMPANYNAME}\${APPNAME}.lnk $INSTDIR\PortOfExiles.exe
-echo     createShortCut $DESKTOP\${APPNAME}.lnk $INSTDIR\PortOfExiles.exe
+echo     createDirectory "$SMPROGRAMS\Port of Exiles"
+echo     createShortCut "$SMPROGRAMS\Port of Exiles\Port of Exiles.lnk" "$INSTDIR\Port of Exiles.exe"
+echo     createShortCut "$DESKTOP\Port of Exiles.lnk" "$INSTDIR\Port of Exiles.exe"
 echo.
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayName" ${APPNAME}
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "InstallLocation" "$INSTDIR"
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayIcon" "$INSTDIR\PortOfExiles.exe"
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "Publisher" ${COMPANYNAME}
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "HelpLink" ${HELPURL}
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "URLUpdateInfo" ${UPDATEURL}
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "URLInfoAbout" ${ABOUTURL}
-echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "DisplayVersion" ${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}
-echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "VersionMajor" ${VERSIONMAJOR}
-echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "VersionMinor" ${VERSIONMINOR}
-echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "NoModify" 1
-echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "NoRepair" 1
-echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}" "EstimatedSize" ${INSTALLSIZE}
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "DisplayName" "Port of Exiles"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "UninstallString" "$INSTDIR\uninstall.exe"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "InstallLocation" "$INSTDIR"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "DisplayIcon" "$INSTDIR\Port of Exiles.exe"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "Publisher" "Port of Exiles"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "HelpLink" "https://github.com/your-username/port-of-exiles"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "URLUpdateInfo" "https://github.com/your-username/port-of-exiles/releases"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "URLInfoAbout" "https://github.com/your-username/port-of-exiles"
+echo     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "DisplayVersion" "1.0.0"
+echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "VersionMajor" 1
+echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "VersionMinor" 0
+echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "NoModify" 1
+echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "NoRepair" 1
+echo     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles" "EstimatedSize" 50000
 echo sectionEnd
 echo.
 echo section "uninstall"
-echo     delete $INSTDIR\PortOfExiles.exe
-echo     delete $INSTDIR\chrome-extension.zip
-echo     delete $INSTDIR\firefox-extension.zip
-echo     delete $INSTDIR\README.md
-echo     delete $INSTDIR\LICENSE
-echo     delete $INSTDIR\uninstall.exe
+echo     delete "$INSTDIR\Port of Exiles.exe"
+echo     delete "$INSTDIR\ffmpeg.dll"
+echo     delete "$INSTDIR\d3dcompiler_47.dll"
+echo     delete "$INSTDIR\libEGL.dll"
+echo     delete "$INSTDIR\libGLESv2.dll"
+echo     delete "$INSTDIR\vk_swiftshader.dll"
+echo     delete "$INSTDIR\vulkan-1.dll"
+echo     delete "$INSTDIR\resources.pak"
+echo     delete "$INSTDIR\icudtl.dat"
+echo     delete "$INSTDIR\snapshot_blob.bin"
+echo     delete "$INSTDIR\v8_context_snapshot.bin"
+echo     delete "$INSTDIR\chrome_100_percent.pak"
+echo     delete "$INSTDIR\chrome_200_percent.pak"
+echo     delete "$INSTDIR\LICENSE.electron.txt"
+echo     delete "$INSTDIR\LICENSES.chromium.html"
+echo     delete "$INSTDIR\vk_swiftshader_icd.json"
+echo     rmDir /r "$INSTDIR\locales"
+echo     rmDir /r "$INSTDIR\resources"
+echo     delete "$INSTDIR\chrome-extension.zip"
+echo     delete "$INSTDIR\firefox-extension.zip"
+echo     delete "$INSTDIR\README.md"
+echo     delete "$INSTDIR\LICENSE"
+echo     delete "$INSTDIR\uninstall.exe"
 echo     rmDir $INSTDIR
 echo.
-echo     delete $SMPROGRAMS\${COMPANYNAME}\${APPNAME}.lnk
-echo     rmDir $SMPROGRAMS\${COMPANYNAME}
-echo     delete $DESKTOP\${APPNAME}.lnk
+echo     delete "$SMPROGRAMS\Port of Exiles\Port of Exiles.lnk"
+echo     rmDir "$SMPROGRAMS\Port of Exiles"
+echo     delete "$DESKTOP\Port of Exiles.lnk"
 echo.
-echo     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${COMPANYNAME}"
+echo     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Port of Exiles"
 echo sectionEnd
 ) > installer.nsi
 
 echo Building installer...
+set "PATH=%PATH%;C:\Program Files (x86)\NSIS"
 "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
 if errorlevel 1 (
     echo Failed to build installer with NSIS.

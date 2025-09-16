@@ -37,9 +37,9 @@
       "output": "dist"
     },
     "files": [
-      "**/*",
-      "!node_modules/**/*"
+      "**/*"
     ],
+    "asar": false,
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico"
